@@ -42,10 +42,11 @@ class AuthController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => 'required|max:255',
+            'short_name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|confirmed|min:6',
         ]);
+
     }
 
     /**
@@ -56,10 +57,20 @@ class AuthController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-        ]);
-    }
+      $user = User::create([
+          'short_name' => $data['short_name'],
+          'email' => $data['email'],
+          'password' => bcrypt($data['password']),
+      ]);
+      $user_profile = $user->profile()->save(UsersProfile::create([
+          'user_id' => $user->id,
+          'full_name' => $data['full_name'],
+          'finger_print' => $data['finger_print'],
+          'finger_print2' => $data['finger_print2'],
+          'is_admin' => $data['is_admin'],
+          'is_active' => 1,
+      ]));
+
+      return $user;
+  }
 }
